@@ -38,12 +38,9 @@ jobs:
             pipenv run coverage html
       - store_artifacts:
           path: htmlcov
-      - run: sudo snap install heroku --classic
       - run:
           name: Deploy to Heroku
-          command: /
-            git remote add heroku https://git.heroku.com/loanx-api.git
-            git push heroku master
+          command: git push https://heroku:be2fbcf9-907a-40c4-bddc-59913f41b358@git.heroku.com/loanx-api.git master
 
 
 workflows:
