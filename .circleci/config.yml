@@ -1,0 +1,53 @@
+version: 2
+jobs:
+  build_and_deploy:
+    docker:
+      - image: circleci/python:3.6.7
+      - image: circleci/postgres:10.6
+        environment: 
+          POSTGRES_USER: loans
+          POSTGRES_DB: loans
+          POSTGRES_PASSWORD: loans
+    steps: 
+      - checkout
+      - run:
+          name: Setting permissions
+          command: |
+            sudo chown -R circleci:circleci /usr/local/bin
+            sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
+      - restore_cache:
+          key: deps2-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+
+      - run: sudo -H pip install pipenv
+      - run: pipenv install
+
+      - save_cache:
+          key: deps2-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          paths:
+            - "/usr/local/bin"
+            - "/usr/local/lib/python3.6/site-packages"
+      - run: 
+          name: Run Static validation tools
+          command: |
+            pipenv run sh static_validation.sh
+      - run: 
+          name: Run unit tests and generate coverage report
+          command: |
+            pipenv run coverage run manage.py test -v 2
+            pipenv run coverage report
+            pipenv run coverage html
+      - store_artifacts:
+          path: htmlcov
+      - run: sudo snap install heroku --classic
+      - run:
+          name: Deploy to Heroku
+          command: /
+            git remote add heroku https://git.heroku.com/loanx-api.git
+            git push heroku master
+
+
+workflows:
+  version: 2
+  build-test-deploy:
+    jobs:
+      - build_and_deploy
