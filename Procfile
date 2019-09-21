@@ -1,3 +1,2 @@
-release: python manage.py migrate --noinput
-release: python manage.py createsu
+release: bash ./release-tasks.sh
 web: gunicorn loans.wsgi
