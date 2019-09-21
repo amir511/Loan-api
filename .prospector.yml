@@ -72,6 +72,7 @@ pep257:
     - D407
     - D406
     - D207 # Docstring is under-indented
+    - D204
 
 
 mccabe:
